@@ -72,7 +72,7 @@ int server_handshake(int *to_client) {
 int client_handshake(int *to_server) {
   int pid = getpid();
   char PP[256];
-  sprintf(PP, "%d", pid)
+  sprintf(PP, "%d", pid);
   mkfifo(PP, 0666); // make private pipe
   open(WKP, O_WRONLY);
   write(WKP, pid, sizeof(int));
@@ -82,7 +82,8 @@ int client_handshake(int *to_server) {
   read(PP, &from_server, sizeof(int));
   unlink(PP);
   open(WKP, O_WRONLY);
-  write(WKP, from_server + 1, sizeof(int));
+  int check = from_server + 1;
+  write(WKP, &check, sizeof(int));
   return from_server;
 }
 
