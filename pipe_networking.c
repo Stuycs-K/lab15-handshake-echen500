@@ -12,7 +12,6 @@
 #include "pipe_networking.h"
 #define READ 0
 #define WRITE 1
-
 //UPSTREAM = to the server / from the client
 //DOWNSTREAM = to the client / from the server
 /*=========================
@@ -24,11 +23,12 @@
   returns the file descriptor for the upstream pipe.
   =========================*/
 int server_setup() {
-  mkfifo("fifo", 0666);
-  open("fifo", O_RDONLY);
+  mkfifo(WKP, 0666);
+  open(WKP, O_RDONLY);
   int from_client = 0;
-  read("fifo",&from_client, sizeof(from_client));
-  unlink("fifo");
+  read(WKP,&from_client, sizeof(from_client));
+  close(WKP);
+  unlink(WKP);
   return from_client;
 }
 
@@ -42,8 +42,21 @@ int server_setup() {
   returns the file descriptor for the upstream pipe (see server setup).
   =========================*/
 int server_handshake(int *to_client) {
-  int from_client;
-  return from_client;
+  int from_client = server_setup();
+  char pid[256];
+  sprintf(pid, "%d", from_client);
+  open(pid, O_WRONLY);
+  srand(NULL);
+  int num = rand() % 100000;
+  write(pid,num, sizeof(int));
+  open(WKP, O_RDONLY);
+  int ack;
+  read(WKP, &ack, sizeof(ack));
+  if (ack == num + 1) {
+    return from_client;
+  }
+  perror("Handshake failed");
+  exit(1);
 }
 
 
@@ -58,13 +71,18 @@ int server_handshake(int *to_client) {
   =========================*/
 int client_handshake(int *to_server) {
   int pid = getpid();
-  char buff[256];
-  sprintf(buff, "%d", pid)
-  mkfifo(buff, 0666); // make private pipe
-  open("fifo", O_WRONLY);
-  write("fifo", pid, sizeof(pid));
-  open(buff, O_RDONLY);
+  char PP[256];
+  sprintf(PP, "%d", pid)
+  mkfifo(PP, 0666); // make private pipe
+  open(WKP, O_WRONLY);
+  write(WKP, pid, sizeof(int));
+  close(WKP);
+  open(PP, O_RDONLY);
   int from_server;
+  read(PP, &from_server, sizeof(int));
+  unlink(PP);
+  open(WKP, O_WRONLY);
+  write(WKP, from_server + 1, sizeof(int));
   return from_server;
 }
 
