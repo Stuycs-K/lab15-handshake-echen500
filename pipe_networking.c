@@ -26,6 +26,7 @@
 int server_setup() {
   if (mkfifo(WKP, 0666) == -1) {
     perror("error creating WKP");
+    remove(WKP);
     exit(1);
   }
   int from_client = open(WKP, O_RDONLY);
