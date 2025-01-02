@@ -9,7 +9,7 @@
 
 #ifndef NETWORKING_H
 #define NETWORKING_H
-#define WKP "mario"
+#define WKP "wkp_pipe"
 
 #define HANDSHAKE_BUFFER_SIZE 10
 #define BUFFER_SIZE 1000
