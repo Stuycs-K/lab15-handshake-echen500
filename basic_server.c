@@ -8,7 +8,7 @@ int main() {
   from_client = server_handshake( &to_client );
   while(1) {
     srand(time(NULL));
-    int random_num = rand() % 100000;
+    int random_num = rand() % 100000000;
     write(to_client, &random_num, sizeof(random_num));
     sleep(1);
   }
