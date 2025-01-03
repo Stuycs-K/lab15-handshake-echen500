@@ -8,6 +8,8 @@ int main() {
   while(1){
     int num;
     if (read(from_server, &num, sizeof(num)) == 0) {
+      close(to_server);
+      close(from_server);
       exit(1);
     }
     printf("%d\n", num);
