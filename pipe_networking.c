@@ -51,7 +51,7 @@ int server_handshake(int *to_client) {
 
   char client_pipe[256];
   if (read(from_client, client_pipe, sizeof(client_pipe)) <= 0) {
-    perror("Error reading client pipe name");
+    perror("error reading client pipe name");
     unlink(WKP);
     exit(1);
   }
@@ -59,13 +59,13 @@ int server_handshake(int *to_client) {
 
   *to_client = open(client_pipe, O_WRONLY);
   if (*to_client == -1) {
-    perror("Error opening client pipe");
+    perror("error opening client pipe");
     exit(1);
   }
 
   int random_num = rand() % 100000;
   if (write(*to_client, &random_num, sizeof(random_num)) == -1) {
-    perror("Error writing to client");
+    perror("error writing to client");
     exit(1);
   }
 
@@ -75,7 +75,22 @@ int server_handshake(int *to_client) {
     close(*to_client);
     exit(1);
   }
+ 
+  char test_byte;
+  if (read(from_client, &test_byte, 1) <= 0) {
+      perror("error receiving test byte from client");
+      close(*to_client);
+      exit(1);
+  }
+  printf("To server, from client(should be C): %c\n", test_byte);
 
+  test_byte = 'S'; 
+  if (write(*to_client, &test_byte, 1) == -1) {
+      perror("error sending test byte to client");
+      close(*to_client);
+      exit(1);
+  }
+  
   printf("Server: Handshake successful.\n");
   return from_client;
 }
@@ -95,33 +110,33 @@ int client_handshake(int *to_server) {
   sprintf(private_pipe, "%d", getpid());
 
   if (mkfifo(private_pipe, 0666) == -1) {
-    perror("Error creating private pipe");
+    perror("error creating private pipe");
     exit(1);
   }
 
   *to_server = open(WKP, O_WRONLY);
   if (*to_server == -1) {
-    perror("Error connecting to server");
+    perror("error connecting to server");
     unlink(private_pipe);
     exit(1);
   }
 
   if (write(*to_server, private_pipe, sizeof(private_pipe)) == -1) {
-    perror("Error sending PP name");
+    perror("error sending PP name");
     unlink(private_pipe);
     exit(1);
   }
 
   int private_fd = open(private_pipe, O_RDONLY);
   if (private_fd == -1) {
-    perror("Error opening PP");
+    perror("error opening PP");
     unlink(private_pipe);
     exit(1);
   }
 
   int server_num;
   if (read(private_fd, &server_num, sizeof(server_num)) <= 0) {
-    perror("Error reading from server");
+    perror("error reading from server");
     unlink(private_pipe);
     close(private_fd);
     exit(1);
@@ -129,14 +144,28 @@ int client_handshake(int *to_server) {
 
   int ack = server_num + 1;
   if (write(*to_server, &ack, sizeof(ack)) == -1) {
-    perror("Error sending ack to server");
+    perror("error sending ack to server");
     unlink(private_pipe);
     close(private_fd);
     exit(1);
   }
+  char test_byte = 'C'; 
+  if (write(*to_server, &test_byte, 1) == -1) {
+      perror("error sending byte to server");
+      unlink(private_pipe);
+      close(private_fd);
+      exit(1);
+  }
 
+  if (read(private_fd, &test_byte, 1) <= 0) {
+      perror("error receiving byte from server");
+      unlink(private_pipe);
+      close(private_fd);
+      exit(1);
+  }
+  printf("To client, from server (Should be S): %c\n", test_byte);
   unlink(private_pipe);
-  printf("Client: Handshake successful.\n");
+  printf("Client: Handshake complete.\n");
   return private_fd;
 }
 
@@ -153,31 +182,31 @@ int server_connect(int from_client) {
   char client_pipe[256];
   
   if (read(from_client, client_pipe, sizeof(client_pipe)) <= 0) {
-    perror("Error reading client pipe name");
+    perror("error reading client pipe name");
     exit(1);
   }
 
   int to_client = open(client_pipe, O_WRONLY);
   if (to_client == -1) {
-    perror("Error opening client pipe");
+    perror("error opening client pipe");
     exit(1);
   }
 
   int random_num = rand() % 100000;
   if (write(to_client, &random_num, sizeof(random_num)) == -1) {
-    perror("Error writing to client");
+    perror("error writing to client");
     close(to_client);
     exit(1);
   }
 
   int ack;
   if (read(from_client, &ack, sizeof(ack)) <= 0 || ack != random_num + 1) {
-    perror("ERROR: Handshake failed");
+    perror("error: Handshake failed");
     close(to_client);
     exit(1);
   }
 
-  printf("Subserver: Handshake with client successful.\n");
+  printf("Subserver: Handshake with client complete.\n");
   return to_client;
 }
 
