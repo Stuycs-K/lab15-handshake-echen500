@@ -79,7 +79,7 @@ int server_handshake(int *to_client) {
  
   
   
-  printf("Server: Handshake successful.\n");
+  printf("Server: Handshake complete.\n");
 
   char test_byte;
   if (read(from_client, &test_byte, 1) <= 0) {
