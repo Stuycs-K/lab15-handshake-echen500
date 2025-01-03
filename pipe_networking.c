@@ -64,7 +64,7 @@ int server_handshake(int *to_client) {
   }
   srand(time(NULL));
   int random_num = rand() % 100000;
-  printf("SYN_ACK: %d\n", random_num);
+  //printf("SYN_ACK: %d\n", random_num);
   if (write(*to_client, &random_num, sizeof(random_num)) == -1) {
     perror("error writing to client");
     exit(1);
@@ -79,22 +79,22 @@ int server_handshake(int *to_client) {
  
   
   
-  printf("Server: Handshake complete.\n");
+  //printf("Server: Handshake complete.\n");
 
-  char test_byte;
-  if (read(from_client, &test_byte, 1) <= 0) {
-      perror("error receiving test byte from client");
-      close(*to_client);
-      exit(1);
-  }
-  printf("To server, from client(should be C): %c\n", test_byte);
+  // char test_byte;
+  // if (read(from_client, &test_byte, 1) <= 0) {
+  //     perror("error receiving test byte from client");
+  //     close(*to_client);
+  //     exit(1);
+  // }
+  // printf("To server, from client(should be C): %c\n", test_byte);
 
-  test_byte = 'S'; 
-  if (write(*to_client, &test_byte, 1) == -1) {
-      perror("error sending test byte to client");
-      close(*to_client);
-      exit(1);
-  }
+  // test_byte = 'S'; 
+  // if (write(*to_client, &test_byte, 1) == -1) {
+  //     perror("error sending test byte to client");
+  //     close(*to_client);
+  //     exit(1);
+  // }
   return from_client;
 }
 
@@ -146,7 +146,7 @@ int client_handshake(int *to_server) {
   }
 
   int ack = server_num + 1;
-  printf("ACK: %d\n", ack);
+  //printf("ACK: %d\n", ack);
   if (write(*to_server, &ack, sizeof(ack)) == -1) {
     perror("error sending ack to server");
     unlink(private_pipe);
@@ -154,22 +154,22 @@ int client_handshake(int *to_server) {
     exit(1);
   }
 
-  printf("Client: Handshake complete.\n");
-  char test_byte = 'C'; 
-  if (write(*to_server, &test_byte, 1) == -1) {
-      perror("error sending byte to server");
-      unlink(private_pipe);
-      close(private_fd);
-      exit(1);
-  }
+  // printf("Client: Handshake complete.\n");
+  // char test_byte = 'C'; 
+  // if (write(*to_server, &test_byte, 1) == -1) {
+  //     perror("error sending byte to server");
+  //     unlink(private_pipe);
+  //     close(private_fd);
+  //     exit(1);
+  // }
 
-  if (read(private_fd, &test_byte, 1) <= 0) {
-      perror("error receiving byte from server");
-      unlink(private_pipe);
-      close(private_fd);
-      exit(1);
-  }
-  printf("To client, from server (Should be S): %c\n", test_byte);
+  // if (read(private_fd, &test_byte, 1) <= 0) {
+  //     perror("error receiving byte from server");
+  //     unlink(private_pipe);
+  //     close(private_fd);
+  //     exit(1);
+  // }
+  // printf("To client, from server (Should be S): %c\n", test_byte);
   unlink(private_pipe);
   return private_fd;
 }
@@ -196,7 +196,7 @@ int server_connect(int from_client) {
     perror("error opening client pipe");
     exit(1);
   }
-
+  srand(time(NULL));
   int random_num = rand() % 100000;
   if (write(to_client, &random_num, sizeof(random_num)) == -1) {
     perror("error writing to client");
