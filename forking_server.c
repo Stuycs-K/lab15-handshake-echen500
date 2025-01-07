@@ -3,13 +3,26 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <signal.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/wait.h>
 
+
+void sighandler(int signo){
+  unlink(WKP);
+  exit(0);
+}
+
+void reap_zombie(int signo) {
+  while (waitpid(-1, NULL, WNOHANG) > 0);
+}
 int main() {
   int to_client;
   int from_client;
 
   signal(SIGPIPE, SIG_IGN);
-
+  signal(SIGINT, sighandler);
+  signal(SIGCHLD, reap_zombie);
   srand(time(NULL));
 
   while (1) {

@@ -4,12 +4,17 @@
 #include <unistd.h>
 #include <signal.h>
 
+void sighandler(int signo){
+  unlink(WKP);
+  exit(0);
+}
+
 int main() {
   int to_client;
   int from_client;
 
   signal(SIGPIPE, SIG_IGN);
-
+  signal(SIGINT, sighandler);
   srand(time(NULL));
 
   while (1) {
@@ -24,7 +29,7 @@ int main() {
         break;
       }
 
-      sleep(1);
+      sleep(1); 
     }
   }
 
