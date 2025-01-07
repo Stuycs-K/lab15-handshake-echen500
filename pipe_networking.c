@@ -34,6 +34,7 @@ int server_setup() {
     perror("error opening WKP");
     exit(1);
   }
+  unlink(WKP);
   return from_client;
 }
 
@@ -55,7 +56,7 @@ int server_handshake(int *to_client) {
     unlink(WKP);
     exit(1);
   }
-  unlink(WKP);
+ 
 
   *to_client = open(client_pipe, O_WRONLY);
   if (*to_client == -1) {
@@ -98,6 +99,55 @@ int server_handshake(int *to_client) {
   return from_client;
 }
 
+int server_handshake_half(int *to_client, int from_client) {
+  char client_pipe[256];
+  if (read(from_client, client_pipe, sizeof(client_pipe)) <= 0) {
+    perror("error reading client pipe name");
+    unlink(WKP);
+    exit(1);
+  }
+ 
+
+  *to_client = open(client_pipe, O_WRONLY);
+  if (*to_client == -1) {
+    perror("error opening client pipe");
+    exit(1);
+  }
+  srand(time(NULL));
+  int random_num = rand() % 100000;
+  //printf("SYN_ACK: %d\n", random_num);
+  if (write(*to_client, &random_num, sizeof(random_num)) == -1) {
+    perror("error writing to client");
+    exit(1);
+  }
+
+  int ack;
+  if (read(from_client, &ack, sizeof(ack)) <= 0 || ack != random_num + 1) {
+    perror("Handshake failed");
+    close(*to_client);
+    exit(1);
+  }
+ 
+  
+  
+  //printf("Server: Handshake complete.\n");
+
+  // char test_byte;
+  // if (read(from_client, &test_byte, 1) <= 0) {
+  //     perror("error receiving test byte from client");
+  //     close(*to_client);
+  //     exit(1);
+  // }
+  // printf("To server, from client(should be C): %c\n", test_byte);
+
+  // test_byte = 'S'; 
+  // if (write(*to_client, &test_byte, 1) == -1) {
+  //     perror("error sending test byte to client");
+  //     close(*to_client);
+  //     exit(1);
+  // }
+  return from_client;
+}
 
 /*=========================
   client_handshake

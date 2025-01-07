@@ -23,6 +23,7 @@
 
 
 int server_handshake(int *to_client);
+int server_handshake_half(int *to_client, int from_client);
 int client_handshake(int *to_server);
 
 //for basic & persistent servers
@@ -32,7 +33,7 @@ int server_connect(int from_client);
 int server_setup();
 
 //multi_server
-int multi_server_setup();
-int multi_server_connect(int from_client, struct message m);
+// int multi_server_setup();
+// int multi_server_connect(int from_client, struct message m);
 
 #endif
